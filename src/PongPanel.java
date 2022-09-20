@@ -15,7 +15,7 @@ public class PongPanel extends JPanel implements ActionListener, KeyListener {
 
 	private final static Color BACKGROUND_COLOUR = Color.BLACK;
 	private final static int TIMER_DELAY = 5;
-	private final static int BALL_MOVEMENT_SPEED = 3;
+	private final static int BALL_MOVEMENT_SPEED = 8;
 	Ball ball;
 	GameState gameState = GameState.Initialising;
 	Paddle paddle1, paddle2;
@@ -27,6 +27,7 @@ public class PongPanel extends JPanel implements ActionListener, KeyListener {
 	private final static int WINNER_FONT_SIZE = 40;
 	private final static String WINNER_FONT_FAMILY = "Serif";
 	private final static String WINNER_TEXT = "WINNER!";
+	private final static String REPLAY_TEXT = "Press spacebar to play again...";
 
 	public PongPanel() {
 		setBackground(BACKGROUND_COLOUR);
@@ -67,6 +68,9 @@ public class PongPanel extends JPanel implements ActionListener, KeyListener {
 		switch (gameState) {
 		case Initialising: {
 			createObjects();
+			player1Score = 0;
+			player2Score = 0;
+			gameWinner = null;
 			gameState = GameState.Playing;
 			ball.setxVelocity(BALL_MOVEMENT_SPEED);
 			ball.setyVelocity(BALL_MOVEMENT_SPEED);
@@ -99,6 +103,25 @@ public class PongPanel extends JPanel implements ActionListener, KeyListener {
 		} else if (event.getKeyCode() == KeyEvent.VK_DOWN) {
 			paddle2.setyVelocity(1);
 		}
+		// Press A/D to move paddle1 left/right
+		if (event.getKeyCode() == KeyEvent.VK_A) {
+			paddle1.setxVelocity(-1);
+		}
+		if (event.getKeyCode() == KeyEvent.VK_D) {
+			paddle1.setxVelocity(1);
+		}
+		// Press left/right to move paddle2 left/right
+		if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+			paddle2.setxVelocity(-1);
+		}
+		if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+			paddle2.setxVelocity(1);
+		}
+		// If game is over, press space to restart
+		if (gameState == GameState.GameOver && event.getKeyCode() == KeyEvent.VK_SPACE) {
+			gameState = GameState.Initialising;
+			update();
+		}
 	}
 
 	@Override
@@ -108,6 +131,13 @@ public class PongPanel extends JPanel implements ActionListener, KeyListener {
 		}
 		if (event.getKeyCode() == KeyEvent.VK_UP || event.getKeyCode() == KeyEvent.VK_DOWN) {
 			paddle2.setyVelocity(0);
+		}
+		// Stop left/right movement of paddles when key released.
+		if (event.getKeyCode() == KeyEvent.VK_A || event.getKeyCode() == KeyEvent.VK_D) {
+			paddle1.setxVelocity(0);
+		}
+		if (event.getKeyCode() == KeyEvent.VK_LEFT || event.getKeyCode() == KeyEvent.VK_RIGHT) {
+			paddle2.setxVelocity(0);
 		}
 	}
 
@@ -194,19 +224,22 @@ public class PongPanel extends JPanel implements ActionListener, KeyListener {
 			paintWinner(g);
 		}
 	}
-	
-	 private void paintWinner(Graphics g) {
-         if(gameWinner != null) {
-             Font winnerFont = new Font(WINNER_FONT_FAMILY, Font.BOLD, WINNER_FONT_SIZE);
-            g.setFont(winnerFont);
-            int xPosition = getWidth() / 2;
-            if(gameWinner == Player.One) {
-                xPosition -= WINNER_TEXT_X;
-            } else if(gameWinner == Player.Two) {
-                xPosition += WINNER_TEXT_X;
-            }
-            g.drawString(WINNER_TEXT, xPosition, WINNER_TEXT_Y);
-        }
-    }
+
+	private void paintWinner(Graphics g) {
+		if (gameWinner != null) {
+			Font winnerFont = new Font(WINNER_FONT_FAMILY, Font.BOLD, WINNER_FONT_SIZE);
+			g.setFont(winnerFont);
+			int xPosition = getWidth() / 2;
+			if (gameWinner == Player.One) {
+				xPosition -= WINNER_TEXT_X;
+			} else if (gameWinner == Player.Two) {
+				xPosition += WINNER_TEXT_X;
+			}
+			g.drawString(WINNER_TEXT, xPosition, WINNER_TEXT_Y);
+			
+			// Show play again message.
+			g.drawString(REPLAY_TEXT, 40, getHeight() - 40);
+		}
+	}
 
 }
